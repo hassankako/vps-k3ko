@@ -1,4 +1,3 @@
-apt update && apt upgrade -y && apt install -y haproxy nginx certbot uuid-runtime curl wget nano net-tools && cat << 'EOF' > /usr/local/bin/k3ko-engine
 #!/bin/bash
 
 CONFIG_FILE="/etc/k3ko_config.env"
