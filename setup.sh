@@ -22,11 +22,10 @@ fi
 
 while true; do
   clear
-  source "$CONFIG_FILE"
+  [ -f "$CONFIG_FILE" ] && source "$CONFIG_FILE"
   
-  # استخراج معلومات النظام الحقيقية بدون دومين
-  OS_NAME=$(grep -oP '(?PRETTY_NAME=")[^"]+' /etc/os-release 2>/dev/null || echo "Ubuntu Linux")
-  UPTIME_VAL=$(uptime -p | sed 's/up //' 2>/dev/null || echo "4 hours, 13 minutes")
+  OS_NAME="Ubuntu Linux"
+  UPTIME_VAL=$(uptime -p 2>/dev/null | sed 's/up //' || echo "Running")
   MEM_USAGE=$(free | grep Mem | awk '{printf "%.0f%%", $3/$2 * 100}' 2>/dev/null || echo "5%")
   SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
   MANAGED_USERS=0
@@ -39,7 +38,6 @@ while true; do
   echo -e "\033[1;37mMemory   : \033[1;32m$MEM_USAGE\033[0m          \033[1;37m│ Users      : \033[1;32m$MANAGED_USERS Managed\033[0m"
   echo -e "\033[1;34m──────────────────────────────────────────────────────────────\033[0m"
 
-  # قسم إدارة المستخدمين
   echo -e "\033[1;35m                      [ 👤 USER MANAGEMENT ]                      \033[0m"
   echo -e "\033[1;34m──────────────────────────────────────────────────────────────\033[0m"
   printf "\033[1;36m[ 1 ]\033[0m ✨ Create SSH Account    \033[1;36m[ 2 ]\033[0m 🗑️  Delete Account\n"
@@ -47,19 +45,16 @@ while true; do
   printf "\033[1;36m[ 5 ]\033[0m 📦 Create V2Ray SlowDNS   \033[1;36m[ 6 ]\033[0m 📋 List Managed Users\n"
   printf "\033[1;36m[ 7 ]\033[0m 🔍 Search User Account    \033[1;36m[ 8 ]\033[0m 📊 Active Connections\n"
 
-  # قسم الشبكة والبروتوكولات
   echo -e "\n\033[1;35m                     [ 🌐 VPN & PROTOCOLS ]                     \033[0m"
   echo -e "\033[1;34m──────────────────────────────────────────────────────────────\033[0m"
   printf "\033[1;36m[ 9 ]\033[0m ⚙️  Ports Config           \033[1;36m[ 10 ]\033[0m 📈 SlowDNS NS Settings\n"
   printf "\033[1;36m[ 15 ]\033[0m 🚀 Install & Setup UDP Custom (UDB)\n"
 
-  # إعدادات النظام
   echo -e "\n\033[1;35m                     [ ⚙️  SYSTEM SETTINGS ]                     \033[0m"
   echo -e "\033[1;34m──────────────────────────────────────────────────────────────\033[0m"
   printf "\033[1;36m[ 11 ]\033[0m 🎨 SSH Banner Config      \033[1;36m[ 12 ]\033[0m 💾 Backup Database\n"
   printf "\033[1;36m[ 13 ]\033[0m ♻️  Restore User Data      \033[1;36m[ 14 ]\033[0m 🧹 Cleanup Database\n"
 
-  # منطقة الخطر والخروج
   echo -e "\n\033[1;31m                      [ 🔥 DANGER ZONE ]                      \033[0m"
   echo -e "\033[1;34m──────────────────────────────────────────────────────────────\033[0m"
   printf "\033[1;31m[ 99 ]\033[0m 🛑 Reset All Data         \033[1;32m[ 0 ]\033[0m  🚪 Exit Panel\n"
@@ -74,10 +69,7 @@ while true; do
           read -p "Enter username: " username
           read -sp "Enter password: " password; echo
           read -p "Enter expiry days: " days
-          
-          # حفظ البيانات بدون طلب دومين
           echo "SSH | User: $username | Pass: $password | Days: $days" >> "$DB_FILE"
-          
           echo -e "\n\033[0;32m✔ SSH Account Created Successfully!\033[0m"
           echo -e "Server IP : $SERVER_IP"
           echo -e "Username  : $username"
@@ -122,9 +114,7 @@ while true; do
           mkdir -p /root/udp
           wget -q https://raw.githubusercontent.com/mlhvn/UDP-Custom/main/udp-custom-linux-amd64 -O /root/udp/udp-custom
           chmod +x /root/udp/udp-custom
-          
           read -p "Enter UDB Port (e.g., 7100): " udb_port
-          
           cat <<EOF > /root/udp/config.json
 {
   "listen": ":$udb_port",
@@ -132,7 +122,6 @@ while true; do
 }
 EOF
           nohup /root/udp/udp-custom server -exclude 127.0.0.1 > /root/udp/udp.log 2>&1 &
-          
           echo -e "\n\033[0;32m✔ UDP Custom Installed & Running!\033[0m"
           echo -e "Server IP : $SERVER_IP"
           echo -e "Port      : $udb_port"
